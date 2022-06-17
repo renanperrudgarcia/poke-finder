@@ -1,4 +1,5 @@
 <script setup>
+import ButtonOrder from '@/components/ButtonOrder.vue'
 import IconDismissCircle from '@/assets/icons/dismiss-circle.svg?component'
 import LikeButton from '@/components/LikeButton.vue'
 import { API_URL, LOADING_DELAY } from '@/helpers/constants'
@@ -12,6 +13,7 @@ const emit = defineEmits(['clear-search', 'item-clicked'])
 // Starting reactive object to handle the state of the API fetch.
 let fetchState = $ref({ isFetching: true, error: null, data: null })
 
+let orderBy = $ref('id')
 // When the component is mounted in the DOM.
 onMounted(async () => {
   // Simulate a delay to see loading state...
@@ -31,12 +33,23 @@ const items = $computed(() => {
 
 // Computed list of API results filtered by search text.
 const filteredItems = $computed(() => {
-  return items.filter(
-    (item) =>
-      item.name.indexOf(props.search.toLowerCase()) > -1 ||
-      item.id === Number(props.search)
-  )
+
+ return items
+  .sort((a, b) => {
+      return orderBy == 'name'
+        ? a[orderBy].localeCompare(b[orderBy])
+        : a[orderBy] - b[orderBy]
+    })
+  .filter(
+      (item) =>
+        item.name.indexOf(props.search.toLowerCase()) > -1 ||
+        item.id === Number(props.search)
+    )
 })
+
+function OrderItens(param) {
+  orderBy = param
+}
 
 // Computed message with count of items found after a search.
 const itensFoundMessage = $computed(() => {
@@ -91,6 +104,10 @@ watchEffect(() =>
         <span>Clear</span>
       </button>
     </div>
+
+      <div>
+        <ButtonOrder   @order-by="OrderItens" />
+      </div>
 
     <ol
       class="flex flex-wrap justify-center gap-6 lg:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
